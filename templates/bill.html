@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+{% block title %}Guest Folio #GS-{{ booking.id }} — GrandStay Luxury Management{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto space-y-6">
+
+  <!-- Top Action Navigation (Hidden During Print) -->
+  <div class="flex flex-wrap items-center justify-between gap-4 no-print pb-2">
+    <div class="flex items-center space-x-3">
+      <a href="{{ url_for('index') }}" class="btn-secondary">
+        <svg class="w-4 h-4 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        <span>Dashboard</span>
+      </a>
+      <a href="{{ url_for('book') }}" class="btn-secondary">
+        <svg class="w-4 h-4 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></svg>
+        <span>New Booking</span>
+      </a>
+    </div>
+
+    <div class="flex items-center space-x-3">
+      {% if booking.status == 'Booked' %}
+      <form class="inline" method="post" action="{{ url_for('checkout', booking_id=booking.id) }}" onsubmit="return confirm('Confirm guest checkout and settle folio?')">
+        <button type="submit" class="btn-gold py-2 px-4 text-xs">
+          <svg class="w-4 h-4 text-slate-900" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          <span>Process Checkout Now</span>
+        </button>
+      </form>
+      {% endif %}
+
+      <button onclick="window.print()" class="btn-navy py-2 px-4 text-xs shadow-md">
+        <svg class="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></svg>
+        <span>Print Folio / Save PDF</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Luxury Folio / Invoice Card -->
+  <section class="print-folio luxury-card p-8 sm:p-12 relative overflow-hidden bg-white dark:bg-[#151C28] text-slate-900 dark:text-slate-100 shadow-xl border border-slate-200/80 dark:border-slate-800">
+    
+    <!-- Top Watermark / Gold Accent Bar -->
+    <div class="h-2 bg-gradient-to-r from-[#D4AF37] via-[#C5A880] to-[#A38459] absolute top-0 inset-x-0"></div>
+
+    <!-- Header Block -->
+    <header class="flex flex-col sm:flex-row sm:items-start justify-between gap-6 pb-8 border-b-2 border-slate-100 dark:border-slate-800">
+      <div>
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#D4AF37] to-[#C5A880] flex items-center justify-center font-bold text-slate-900 shadow-sm">
+            🏨
+          </div>
+          <div>
+            <h1 class="font-serif text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">GRANDSTAY</h1>
+            <p class="text-[11px] font-bold uppercase tracking-widest text-amber-700 dark:text-amber-400">Hotels, Suites & Luxury Resorts</p>
+          </div>
+        </div>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mt-2 max-w-xs leading-relaxed">
+          100 Ocean Promenade • Luxury Coastal Enclave<br>
+          Tel: +1 (800) 555-STAY • concierge@grandstay.com
+        </p>
+      </div>
+
+      <!-- Folio Metadata -->
+      <div class="sm:text-right space-y-1.5">
+        <div class="inline-block px-3 py-1 rounded-md text-xs font-black tracking-widest uppercase {% if booking.status == 'Checked Out' %}bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30{% else %}bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/30{% endif %}">
+          {% if booking.status == 'Checked Out' %}SETTLED & CHECKED OUT{% else %}CONFIRMED RESERVATION{% endif %}
+        </div>
+        <div class="text-xl font-mono font-bold text-slate-900 dark:text-white mt-2">
+          Folio #GS-{{ booking.id }}
+        </div>
+        <div class="text-xs text-slate-500 dark:text-slate-400">
+          Created: {{ booking.created_at }}
+        </div>
+      </div>
+    </header>
+
+    <!-- Guest & Stay Overview (2-Column Grid) -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-8 my-8 text-sm">
+      
+      <!-- Billed To -->
+      <div class="p-5 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800 space-y-2">
+        <span class="text-[11px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500 block">Billed To (Guest)</span>
+        <h3 class="font-serif text-xl font-bold text-slate-900 dark:text-white">{{ booking.guest_name }}</h3>
+        <p class="text-xs text-slate-600 dark:text-slate-300">
+          Contact: <b>{{ booking.phone }}</b><br>
+          {% if booking.email %}Email: {{ booking.email }}{% else %}Email: Not specified{% endif %}
+        </p>
+      </div>
+
+      <!-- Stay Specifics -->
+      <div class="p-5 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800 space-y-2 sm:text-right">
+        <span class="text-[11px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500 block">Reservation Details</span>
+        <div class="font-serif text-xl font-bold text-slate-900 dark:text-white">
+          Room {{ booking.room_no }} • {{ booking.room_type }}
+        </div>
+        <p class="text-xs text-slate-600 dark:text-slate-300">
+          Duration: <b>{{ booking.check_in }}</b> to <b>{{ booking.check_out }}</b><br>
+          Stay Length: <span class="font-bold text-amber-700 dark:text-amber-400">{{ booking.nights }} Night(s)</span> • Occupants: {{ booking.guests }}
+        </p>
+      </div>
+
+    </div>
+
+    <!-- Itemized Billing Statement Table -->
+    <div class="overflow-x-auto my-8">
+      <table class="w-full text-left text-sm border-collapse">
+        <thead>
+          <tr class="border-b-2 border-slate-200 dark:border-slate-800 text-[11px] uppercase tracking-wider text-slate-400 font-bold">
+            <th class="py-3 px-2">Accommodation & Services</th>
+            <th class="py-3 px-2">Nightly Rate</th>
+            <th class="py-3 px-2">Duration</th>
+            <th class="py-3 px-2 text-right">Amount (₹)</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 dark:divide-slate-800/80 text-slate-800 dark:text-slate-200">
+          <!-- Room Charges -->
+          <tr>
+            <td class="py-4 px-2">
+              <div class="font-bold text-slate-900 dark:text-white">{{ booking.room_type }} Room — Allocation #{{ booking.room_no }}</div>
+              <div class="text-xs text-slate-400 mt-0.5">Primary accommodation tariff inclusive of standard amenities</div>
+            </td>
+            <td class="py-4 px-2 font-mono">₹{{ "%.2f"|format(booking.price) }}</td>
+            <td class="py-4 px-2">{{ booking.nights }} night(s)</td>
+            <td class="py-4 px-2 text-right font-mono font-bold text-slate-900 dark:text-white">
+              ₹{{ "%.2f"|format(booking.total) }}
+            </td>
+          </tr>
+
+          <!-- Complimentary Inclusions -->
+          <tr>
+            <td class="py-3 px-2 text-xs text-slate-500 dark:text-slate-400">
+              High-Speed Fiber Wi-Fi & Lounge Access
+            </td>
+            <td class="py-3 px-2 text-xs font-mono text-slate-400">—</td>
+            <td class="py-3 px-2 text-xs text-slate-400">Included</td>
+            <td class="py-3 px-2 text-right text-xs font-mono font-bold text-emerald-600 dark:text-emerald-400">₹0.00</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Grand Total & Summary Box -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-6 pt-6 border-t-2 border-slate-200 dark:border-slate-800">
+      
+      <!-- Hospitality Stamp -->
+      <div class="space-y-1 text-xs text-slate-400">
+        <div class="font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">GrandStay Hospitality Folio</div>
+        <p>Folio settles accommodation tariff upon departure. Thank you for your stay.</p>
+        <div class="pt-2 text-[11px] font-mono text-slate-500">Transaction ID: TXN-{{ booking.id }}-GS-SECURE</div>
+      </div>
+
+      <!-- Total Amount Capsule -->
+      <div class="p-6 rounded-2xl bg-gradient-to-tr from-amber-500/15 via-amber-500/5 to-transparent border border-amber-500/30 sm:min-w-[280px] text-right space-y-1 shadow-sm">
+        <span class="text-xs font-bold uppercase tracking-wider text-amber-800 dark:text-amber-400 block">Total Folio Charge</span>
+        <div class="font-serif text-3xl font-black text-slate-900 dark:text-white tracking-tight">
+          ₹{{ "%.2f"|format(booking.total) }}
+        </div>
+        <span class="text-[10px] text-slate-500 dark:text-slate-400 block">All applicable luxury levies inclusive</span>
+      </div>
+
+    </div>
+
+    <!-- Signatures & Editorial Footer -->
+    <div class="mt-12 pt-8 border-t border-slate-100 dark:border-slate-800 grid grid-cols-2 gap-8 text-xs text-slate-500">
+      <div>
+        <div class="border-b border-slate-300 dark:border-slate-700 pb-8 mb-2"></div>
+        <p class="font-bold uppercase tracking-wider text-[10px] text-slate-400">Guest Signature</p>
+      </div>
+      <div class="text-right">
+        <div class="border-b border-slate-300 dark:border-slate-700 pb-8 mb-2"></div>
+        <p class="font-bold uppercase tracking-wider text-[10px] text-slate-400">Authorized Receptionist Stamp</p>
+      </div>
+    </div>
+
+    <!-- Thank You Banner -->
+    <div class="text-center pt-8 border-t border-slate-100 dark:border-slate-800 mt-8 text-xs text-slate-400">
+      <span class="font-serif italic text-sm text-slate-600 dark:text-slate-300 block mb-1">"Hospitality is the art of creating a world of grace and ease."</span>
+      GrandStay Hotels & Resorts • Excellence in Luxury Hospitality
+    </div>
+
+  </section>
+
+</div>
+{% endblock %}

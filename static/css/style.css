@@ -1,0 +1,616 @@
+/* ==========================================================================
+   GRANDSTAY LUXURY HOTEL MANAGEMENT SYSTEM - CORE STYLESHEET
+   Design System: Luxury Hospitality meets Modern SaaS (Linear / Boutique)
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;0,800;1,600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+  /* Color Palette - Light Mode Default */
+  --bg-main: #F8F9FA;
+  --bg-surface: #FFFFFF;
+  --bg-surface-elevated: #FFFFFF;
+  --bg-surface-subtle: #F1F5F9;
+  --bg-surface-hover: #F8FAFC;
+  
+  --border-subtle: rgba(226, 232, 240, 0.85);
+  --border-accent: rgba(212, 175, 55, 0.35);
+
+  --text-primary: #0F172A;
+  --text-secondary: #475569;
+  --text-muted: #94A3B8;
+
+  /* Accents */
+  --gold-primary: #C5A880;
+  --gold-dark: #A38459;
+  --gold-light: #F7F3EE;
+  --navy-dark: #0F172A;
+  --navy-surface: #1E293B;
+
+  /* Status Colors */
+  --emerald-main: #059669;
+  --emerald-bg: #ECFDF5;
+  --emerald-border: #A7F3D0;
+
+  --rose-main: #E11D48;
+  --rose-bg: #FFF1F2;
+  --rose-border: #FECDD3;
+
+  --amber-main: #D97706;
+  --amber-bg: #FFFBEB;
+  --amber-border: #FDE68A;
+
+  --slate-main: #64748B;
+  --slate-bg: #F1F5F9;
+  --slate-border: #CBD5E1;
+
+  /* Typography */
+  --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --font-serif: 'Playfair Display', Georgia, serif;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgba(15, 23, 42, 0.05);
+  --shadow-md: 0 4px 12px -2px rgba(15, 23, 42, 0.08), 0 2px 6px -1px rgba(15, 23, 42, 0.04);
+  --shadow-lg: 0 12px 30px -4px rgba(15, 23, 42, 0.12), 0 4px 12px -2px rgba(15, 23, 42, 0.06);
+  --shadow-glow-gold: 0 0 20px rgba(197, 168, 128, 0.25);
+}
+
+/* Dark Mode Theme */
+html.dark {
+  --bg-main: #0B0F17;
+  --bg-surface: #151C28;
+  --bg-surface-elevated: #1C2433;
+  --bg-surface-subtle: #1E293B;
+  --bg-surface-hover: #232D3F;
+
+  --border-subtle: rgba(51, 65, 85, 0.65);
+  --border-accent: rgba(212, 175, 55, 0.3);
+
+  --text-primary: #F8FAFC;
+  --text-secondary: #CBD5E1;
+  --text-muted: #64748B;
+
+  --gold-primary: #D4AF37;
+  --gold-dark: #C5A880;
+  --gold-light: rgba(212, 175, 55, 0.12);
+
+  --emerald-main: #34D399;
+  --emerald-bg: rgba(6, 78, 59, 0.25);
+  --emerald-border: rgba(52, 211, 153, 0.3);
+
+  --rose-main: #FB7185;
+  --rose-bg: rgba(136, 19, 55, 0.25);
+  --rose-border: rgba(251, 113, 133, 0.3);
+
+  --amber-main: #FBBF24;
+  --amber-bg: rgba(120, 53, 15, 0.25);
+  --amber-border: rgba(251, 191, 36, 0.3);
+
+  --slate-main: #94A3B8;
+  --slate-bg: rgba(30, 41, 59, 0.5);
+  --slate-border: rgba(71, 85, 105, 0.5);
+
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 12px -2px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 12px 30px -4px rgba(0, 0, 0, 0.6);
+  --shadow-glow-gold: 0 0 25px rgba(212, 175, 55, 0.2);
+}
+
+/* Base Resets & Global Styles */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background-color: var(--bg-main);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.5;
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+.font-serif {
+  font-family: var(--font-serif);
+}
+
+.font-sans {
+  font-family: var(--font-sans);
+}
+
+/* Glassmorphism Floating Navigation */
+.glass-nav {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border-subtle);
+  transition: all 0.25s ease;
+}
+
+html.dark .glass-nav {
+  background: rgba(15, 23, 42, 0.88);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+/* Luxury Card Surfaces */
+.luxury-card {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 18px;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.luxury-card:hover {
+  box-shadow: var(--shadow-md);
+  border-color: rgba(212, 175, 55, 0.35);
+}
+
+/* KPI Card Sparklines */
+.sparkline-svg {
+  width: 100%;
+  height: 38px;
+  overflow: visible;
+}
+
+.sparkline-path {
+  fill: none;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.sparkline-area {
+  opacity: 0.15;
+}
+
+/* Status Indicators with Glowing Pulsing Dot */
+.status-dot {
+  position: relative;
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.status-dot.available {
+  background-color: var(--emerald-main);
+  box-shadow: 0 0 0 0 rgba(5, 150, 105, 0.6);
+  animation: pulse-emerald 2s infinite;
+}
+
+.status-dot.occupied {
+  background-color: var(--rose-main);
+  box-shadow: 0 0 0 0 rgba(225, 29, 72, 0.6);
+  animation: pulse-rose 2s infinite;
+}
+
+.status-dot.cleaning {
+  background-color: var(--amber-main);
+  box-shadow: 0 0 0 0 rgba(217, 119, 6, 0.6);
+  animation: pulse-amber 2s infinite;
+}
+
+.status-dot.maintenance {
+  background-color: var(--slate-main);
+}
+
+@keyframes pulse-emerald {
+  0% { box-shadow: 0 0 0 0 rgba(5, 150, 105, 0.7); }
+  70% { box-shadow: 0 0 0 7px rgba(5, 150, 105, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(5, 150, 105, 0); }
+}
+
+@keyframes pulse-rose {
+  0% { box-shadow: 0 0 0 0 rgba(225, 29, 72, 0.7); }
+  70% { box-shadow: 0 0 0 7px rgba(225, 29, 72, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(225, 29, 72, 0); }
+}
+
+@keyframes pulse-amber {
+  0% { box-shadow: 0 0 0 0 rgba(217, 119, 6, 0.7); }
+  70% { box-shadow: 0 0 0 7px rgba(217, 119, 6, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(217, 119, 6, 0); }
+}
+
+/* Status Badges */
+.badge-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.badge-status.available {
+  background-color: var(--emerald-bg);
+  color: var(--emerald-main);
+  border: 1px solid var(--emerald-border);
+}
+
+.badge-status.occupied {
+  background-color: var(--rose-bg);
+  color: var(--rose-main);
+  border: 1px solid var(--rose-border);
+}
+
+.badge-status.cleaning {
+  background-color: var(--amber-bg);
+  color: var(--amber-main);
+  border: 1px solid var(--amber-border);
+}
+
+.badge-status.maintenance {
+  background-color: var(--slate-bg);
+  color: var(--slate-main);
+  border: 1px solid var(--slate-border);
+}
+
+/* Room Category Pill Tags */
+.pill-tier {
+  padding: 3px 9px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border: 1px solid transparent;
+}
+
+.pill-tier.suite {
+  background: rgba(212, 175, 55, 0.15);
+  color: #B8860B;
+  border-color: rgba(212, 175, 55, 0.4);
+}
+html.dark .pill-tier.suite {
+  background: rgba(212, 175, 55, 0.2);
+  color: #E5C378;
+}
+
+.pill-tier.deluxe {
+  background: rgba(99, 102, 241, 0.12);
+  color: #4F46E5;
+  border-color: rgba(99, 102, 241, 0.3);
+}
+html.dark .pill-tier.deluxe {
+  background: rgba(99, 102, 241, 0.2);
+  color: #818CF8;
+}
+
+.pill-tier.double {
+  background: rgba(14, 165, 233, 0.12);
+  color: #0284C7;
+  border-color: rgba(14, 165, 233, 0.3);
+}
+html.dark .pill-tier.double {
+  background: rgba(14, 165, 233, 0.2);
+  color: #38BDF8;
+}
+
+.pill-tier.single {
+  background: rgba(100, 116, 139, 0.12);
+  color: #475569;
+  border-color: rgba(100, 116, 139, 0.25);
+}
+html.dark .pill-tier.single {
+  background: rgba(100, 116, 139, 0.25);
+  color: #94A3B8;
+}
+
+/* Room Card Thumbnail Image Zoom */
+.room-card-img-container {
+  position: relative;
+  overflow: hidden;
+  border-radius: 14px 14px 0 0;
+  aspect-ratio: 16 / 9;
+}
+
+.room-card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.luxury-card:hover .room-card-img {
+  transform: scale(1.05);
+}
+
+/* Luxury Interactive Buttons */
+.btn-gold {
+  background: linear-gradient(135deg, #D4AF37 0%, #C5A880 100%);
+  color: #0F172A;
+  font-weight: 700;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 20px;
+  font-size: 14px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 2px 8px rgba(197, 168, 128, 0.3);
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.btn-gold:hover {
+  background: linear-gradient(135deg, #E5C378 0%, #D4AF37 100%);
+  box-shadow: 0 4px 16px rgba(197, 168, 128, 0.5);
+  transform: translateY(-1px);
+}
+
+.btn-navy {
+  background-color: var(--navy-dark);
+  color: #FFFFFF;
+  font-weight: 600;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 10px 18px;
+  font-size: 14px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.btn-navy:hover {
+  background-color: #1E293B;
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  background-color: var(--bg-surface-subtle);
+  color: var(--text-primary);
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.btn-secondary:hover {
+  background-color: var(--bg-surface-hover);
+  border-color: var(--text-muted);
+}
+
+/* Interactive Room Heatmap */
+.heatmap-cell {
+  position: relative;
+  aspect-ratio: 1.1;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border-subtle);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.heatmap-cell:hover {
+  transform: translateY(-3px) scale(1.03);
+  box-shadow: var(--shadow-md);
+  z-index: 10;
+}
+
+.heatmap-cell.available {
+  background-color: var(--emerald-bg);
+  border-color: var(--emerald-border);
+  color: var(--emerald-main);
+}
+
+.heatmap-cell.occupied {
+  background-color: var(--rose-bg);
+  border-color: var(--rose-border);
+  color: var(--rose-main);
+}
+
+.heatmap-cell.cleaning {
+  background-color: var(--amber-bg);
+  border-color: var(--amber-border);
+  color: var(--amber-main);
+}
+
+.heatmap-cell.maintenance {
+  background-color: var(--slate-bg);
+  border-color: var(--slate-border);
+  color: var(--slate-main);
+}
+
+/* Room Occupancy Gantt / Timeline */
+.timeline-grid {
+  display: grid;
+  grid-template-columns: 140px repeat(7, minmax(100px, 1fr));
+  gap: 1px;
+  background-color: var(--border-subtle);
+  border-radius: 12px;
+  overflow-x: auto;
+}
+
+.timeline-cell {
+  background-color: var(--bg-surface);
+  min-height: 48px;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+}
+
+.timeline-booking-capsule {
+  width: 100%;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+/* Skeleton Loaders */
+.skeleton {
+  background: linear-gradient(90deg, var(--bg-surface-subtle) 25%, var(--bg-surface-hover) 50%, var(--bg-surface-subtle) 75%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s infinite;
+  border-radius: 8px;
+}
+
+@keyframes skeleton-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Modernized Table */
+.luxury-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.luxury-table th {
+  padding: 14px 18px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  background-color: var(--bg-surface-subtle);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.luxury-table th:first-child {
+  border-top-left-radius: 12px;
+}
+.luxury-table th:last-child {
+  border-top-right-radius: 12px;
+}
+
+.luxury-table td {
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--border-subtle);
+  background-color: var(--bg-surface);
+  font-size: 13.5px;
+  transition: background-color 0.15s ease;
+}
+
+.luxury-table tbody tr:hover td {
+  background-color: var(--bg-surface-hover);
+}
+
+.luxury-table tbody tr:last-child td:first-child {
+  border-bottom-left-radius: 12px;
+}
+.luxury-table tbody tr:last-child td:last-child {
+  border-bottom-right-radius: 12px;
+}
+
+/* Avatar Initials */
+.avatar-initials {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: -0.02em;
+}
+
+/* Form Styling */
+.luxury-input, .luxury-select {
+  width: 100%;
+  padding: 11px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border-subtle);
+  background-color: var(--bg-surface);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.luxury-input:focus, .luxury-select:focus {
+  outline: none;
+  border-color: var(--gold-primary);
+  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.15);
+}
+
+/* Modal Dialog */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+.modal-backdrop.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal-content {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 20px;
+  box-shadow: var(--shadow-lg);
+  max-width: 520px;
+  width: 92%;
+  transform: translateY(20px) scale(0.97);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.modal-backdrop.active .modal-content {
+  transform: translateY(0) scale(1);
+}
+
+/* Printable Folio & Bill Styles */
+@media print {
+  body {
+    background: #FFFFFF !important;
+    color: #0F172A !important;
+  }
+
+  .no-print, nav, footer, .btn-gold, .btn-navy, .btn-secondary, button {
+    display: none !important;
+  }
+
+  .print-folio {
+    box-shadow: none !important;
+    border: none !important;
+    max-width: 100% !important;
+    padding: 0 !important;
+  }
+
+  .print-folio * {
+    color: #0F172A !important;
+  }
+}

@@ -1,0 +1,826 @@
+{% extends "base.html" %}
+{% block title %}Executive Dashboard — GrandStay Luxury Management{% endblock %}
+
+{% block content %}
+<div class="space-y-10">
+
+  <!-- ================= TOP HERO & EXECUTIVE CONTROLS ================= -->
+  <section class="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-2 border-b border-slate-200/80 dark:border-slate-800/80">
+    <div>
+      <div class="flex items-center space-x-2.5 mb-2">
+        <span class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse"></span>
+        <span class="text-xs font-bold uppercase tracking-widest text-amber-700 dark:text-amber-400">Operations Control</span>
+        <span class="text-slate-300 dark:text-slate-700">•</span>
+        <span class="text-xs font-semibold text-slate-500 dark:text-slate-400">Live Property Overview</span>
+      </div>
+      <h1 class="font-serif text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">Executive Dashboard</h1>
+      <p class="text-slate-500 dark:text-slate-400 text-sm mt-1 max-w-xl">
+        Real-time room occupancy, revenue yield, guest reservations, and front-desk workflows.
+      </p>
+    </div>
+
+    <!-- Quick Action Toolbar -->
+    <div class="flex flex-wrap items-center gap-3">
+      <button onclick="openAddRoomModal()" class="btn-secondary">
+        <svg class="w-4 h-4 text-slate-600 dark:text-slate-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+        <span>Add Room</span>
+      </button>
+
+      <a href="{{ url_for('book') }}" class="btn-gold">
+        <svg class="w-4 h-4 text-slate-900" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" x2="19" y1="8" y2="14"/><line x1="22" x2="16" y1="11" y2="11"/></svg>
+        <span>New Reservation</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- ================= 1. KPI METRIC CARDS WITH SPARKLINES ================= -->
+  <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+    
+    <!-- KPI 1: Occupancy Rate -->
+    <div class="luxury-card p-5 relative overflow-hidden group">
+      <div class="flex items-start justify-between">
+        <div>
+          <span class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Occupancy Rate</span>
+          <div class="flex items-baseline space-x-2 mt-1.5">
+            <h3 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">{{ stats.occupancy_rate }}%</h3>
+            <span class="text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full">+12.4%</span>
+          </div>
+          <p class="text-[11px] text-slate-400 dark:text-slate-500 mt-1">{{ stats.occupied }} of {{ stats.rooms }} rooms occupied</p>
+        </div>
+        <div class="w-10 h-10 rounded-xl bg-emerald-500/10 dark:bg-emerald-400/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 4v16"/><path d="M2 8h18a2 2 0 0 1 2 2v10"/><path d="M2 17h20"/><path d="M6 8v9"/></svg>
+        </div>
+      </div>
+      <!-- Sparkline SVG -->
+      <div class="mt-4 pt-2 border-t border-slate-100 dark:border-slate-800">
+        <svg class="sparkline-svg" viewBox="0 0 120 28">
+          <defs>
+            <linearGradient id="grad-emerald" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#10B981" stop-opacity="0.3"/>
+              <stop offset="100%" stop-color="#10B981" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+          <path class="sparkline-area" fill="url(#grad-emerald)" d="M0,22 Q20,12 40,16 T80,8 T120,4 L120,28 L0,28 Z"/>
+          <path class="sparkline-path" stroke="#10B981" d="M0,22 Q20,12 40,16 T80,8 T120,4"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- KPI 2: RevPAR (Revenue Per Available Room) -->
+    <div class="luxury-card p-5 relative overflow-hidden group">
+      <div class="flex items-start justify-between">
+        <div>
+          <span class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">RevPAR Yield</span>
+          <div class="flex items-baseline space-x-2 mt-1.5">
+            <h3 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">₹{{ "%.2f"|format(stats.revpar) }}</h3>
+            <span class="text-xs font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full">+8.2%</span>
+          </div>
+          <p class="text-[11px] text-slate-400 dark:text-slate-500 mt-1">Total revenue ₹{{ "%.2f"|format(stats.revenue) }}</p>
+        </div>
+        <div class="w-10 h-10 rounded-xl bg-amber-500/10 dark:bg-amber-400/10 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" x2="12" y1="2" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        </div>
+      </div>
+      <!-- Sparkline SVG -->
+      <div class="mt-4 pt-2 border-t border-slate-100 dark:border-slate-800">
+        <svg class="sparkline-svg" viewBox="0 0 120 28">
+          <defs>
+            <linearGradient id="grad-amber" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#D4AF37" stop-opacity="0.3"/>
+              <stop offset="100%" stop-color="#D4AF37" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+          <path class="sparkline-area" fill="url(#grad-amber)" d="M0,24 Q30,18 60,10 T100,6 T120,2 L120,28 L0,28 Z"/>
+          <path class="sparkline-path" stroke="#D4AF37" d="M0,24 Q30,18 60,10 T100,6 T120,2"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- KPI 3: Total Bookings & Active Reservations -->
+    <div class="luxury-card p-5 relative overflow-hidden group">
+      <div class="flex items-start justify-between">
+        <div>
+          <span class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Total Bookings</span>
+          <div class="flex items-baseline space-x-2 mt-1.5">
+            <h3 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">{{ stats.bookings }}</h3>
+            <span class="text-xs font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded-full">{{ stats.active_bookings }} Active</span>
+          </div>
+          <p class="text-[11px] text-slate-400 dark:text-slate-500 mt-1">Booked & historical folio count</p>
+        </div>
+        <div class="w-10 h-10 rounded-xl bg-indigo-500/10 dark:bg-indigo-400/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="4" rx="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/><path d="m9 16 2 2 4-4"/></svg>
+        </div>
+      </div>
+      <!-- Sparkline SVG -->
+      <div class="mt-4 pt-2 border-t border-slate-100 dark:border-slate-800">
+        <svg class="sparkline-svg" viewBox="0 0 120 28">
+          <defs>
+            <linearGradient id="grad-indigo" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#6366F1" stop-opacity="0.3"/>
+              <stop offset="100%" stop-color="#6366F1" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+          <path class="sparkline-area" fill="url(#grad-indigo)" d="M0,18 Q35,22 70,12 T110,6 T120,4 L120,28 L0,28 Z"/>
+          <path class="sparkline-path" stroke="#6366F1" d="M0,18 Q35,22 70,12 T110,6 T120,4"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- KPI 4: Today's Check-ins & Desk Activity -->
+    <div class="luxury-card p-5 relative overflow-hidden group">
+      <div class="flex items-start justify-between">
+        <div>
+          <span class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Front Desk Today</span>
+          <div class="flex items-baseline space-x-2 mt-1.5">
+            <h3 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">{{ stats.today_checkins }} In</h3>
+            <span class="text-xs font-bold text-slate-600 dark:text-slate-300 bg-slate-200/60 dark:bg-slate-700/60 px-2 py-0.5 rounded-full">{{ stats.today_checkouts }} Out</span>
+          </div>
+          <p class="text-[11px] text-slate-400 dark:text-slate-500 mt-1">Arrivals & departures queue</p>
+        </div>
+        <div class="w-10 h-10 rounded-xl bg-rose-500/10 dark:bg-rose-400/10 text-rose-600 dark:text-rose-400 flex items-center justify-center">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
+        </div>
+      </div>
+      <!-- Sparkline SVG -->
+      <div class="mt-4 pt-2 border-t border-slate-100 dark:border-slate-800">
+        <svg class="sparkline-svg" viewBox="0 0 120 28">
+          <defs>
+            <linearGradient id="grad-rose" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#FB7185" stop-opacity="0.3"/>
+              <stop offset="100%" stop-color="#FB7185" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+          <path class="sparkline-area" fill="url(#grad-rose)" d="M0,15 Q30,8 60,18 T100,12 T120,6 L120,28 L0,28 Z"/>
+          <path class="sparkline-path" stroke="#FB7185" d="M0,15 Q30,8 60,18 T100,12 T120,6"/>
+        </svg>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ================= 2. ROOM STATUS HEATMAP & GANTT TIMELINE ================= -->
+  <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+    <!-- Interactive Room Status Heatmap (1 Column) -->
+    <div class="luxury-card p-6 flex flex-col justify-between">
+      <div>
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h2 class="text-lg font-bold text-slate-900 dark:text-white">Floor Heatmap</h2>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Live property occupancy grid</p>
+          </div>
+          <!-- Filter Indicator -->
+          <div class="flex items-center space-x-1.5 text-[11px] font-semibold">
+            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+            <span class="text-slate-500 dark:text-slate-400">{{ stats.available }} Free</span>
+          </div>
+        </div>
+
+        <!-- Heatmap Grid -->
+        <div class="grid grid-cols-4 gap-2.5 my-3" id="heatmap-container">
+          {% for r in rooms %}
+          <div class="heatmap-cell {{ r.status|lower }} p-2 group relative"
+               onclick="showRoomDetailModal('{{ r.id }}', '{{ r.room_no }}', '{{ r.room_type }}', '{{ r.price }}', '{{ r.status }}')"
+               title="Room {{ r.room_no }} ({{ r.room_type }}) — {{ r.status }}">
+            <span class="font-bold text-xs tracking-tight">{{ r.room_no }}</span>
+            <span class="text-[10px] opacity-75 truncate max-w-full">{{ r.room_type[:4] }}</span>
+            <span class="status-dot {{ r.status|lower }} absolute top-1.5 right-1.5"></span>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Legend -->
+      <div class="pt-4 border-t border-slate-100 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2 text-[11px]">
+        <div class="flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+          <span class="text-slate-600 dark:text-slate-400">Available</span>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-rose-500"></span>
+          <span class="text-slate-600 dark:text-slate-400">Occupied</span>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+          <span class="text-slate-600 dark:text-slate-400">Cleaning</span>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-slate-400"></span>
+          <span class="text-slate-600 dark:text-slate-400">Maintenance</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Visual Timeline / Gantt Chart for Room Occupancy (2 Columns) -->
+    <div class="lg:col-span-2 luxury-card p-6 flex flex-col justify-between">
+      <div>
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+          <div>
+            <h2 class="text-lg font-bold text-slate-900 dark:text-white">Occupancy Timeline</h2>
+            <p class="text-xs text-slate-500 dark:text-slate-400">7-Day Rolling Reservation Schedule</p>
+          </div>
+          <div class="flex items-center space-x-2 text-xs">
+            <span class="px-2.5 py-1 rounded-md bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20 font-bold">Today: <span id="gantt-today-str">Oct 8</span></span>
+          </div>
+        </div>
+
+        <!-- Timeline Gantt Container -->
+        <div class="overflow-x-auto pb-2">
+          <div class="min-w-[580px]">
+            <!-- Day Column Headers -->
+            <div class="grid grid-cols-8 gap-1.5 pb-2 border-b border-slate-200/80 dark:border-slate-800 text-center text-xs font-bold text-slate-500 dark:text-slate-400">
+              <div class="text-left font-semibold text-[11px] text-slate-400">Room</div>
+              <div class="py-1 rounded bg-amber-500/10 text-amber-700 dark:text-amber-400 font-extrabold">Today</div>
+              <div class="py-1" id="day-col-1">+1d</div>
+              <div class="py-1" id="day-col-2">+2d</div>
+              <div class="py-1" id="day-col-3">+3d</div>
+              <div class="py-1" id="day-col-4">+4d</div>
+              <div class="py-1" id="day-col-5">+5d</div>
+              <div class="py-1" id="day-col-6">+6d</div>
+            </div>
+
+            <!-- Gantt Rows -->
+            <div class="divide-y divide-slate-100 dark:divide-slate-800/60 mt-1">
+              {% for r in rooms %}
+              <div class="grid grid-cols-8 gap-1.5 py-2 items-center text-xs">
+                <!-- Room Label -->
+                <div class="flex items-center space-x-2 text-left">
+                  <span class="status-dot {{ r.status|lower }}"></span>
+                  <span class="font-bold text-slate-800 dark:text-slate-200">#{{ r.room_no }}</span>
+                </div>
+                <!-- 7 Day Span Cells -->
+                <div class="col-span-7 grid grid-cols-7 gap-1">
+                  {% if r.status == 'Occupied' %}
+                    <!-- Spanning Occupancy Block -->
+                    <div class="col-span-4 bg-gradient-to-r from-rose-500/20 to-amber-500/20 border border-rose-500/30 text-rose-800 dark:text-rose-300 rounded-md px-2 py-1 flex items-center justify-between text-[11px] font-semibold truncate shadow-xs">
+                      <span class="truncate">Guest In Stay</span>
+                      <span class="text-[9px] uppercase px-1 py-0.2 bg-rose-500/20 rounded font-bold">Booked</span>
+                    </div>
+                    <div class="col-span-3 bg-slate-50 dark:bg-slate-900/40 rounded-md py-1 text-center text-[11px] text-slate-400">
+                      Available
+                    </div>
+                  {% elif r.status == 'Cleaning' %}
+                    <div class="col-span-2 bg-amber-500/15 border border-amber-500/30 text-amber-800 dark:text-amber-300 rounded-md px-2 py-1 text-[11px] font-semibold">
+                      Housekeeping
+                    </div>
+                    <div class="col-span-5 bg-slate-50 dark:bg-slate-900/40 rounded-md py-1 text-center text-[11px] text-slate-400">
+                      Available
+                    </div>
+                  {% elif r.status == 'Maintenance' %}
+                    <div class="col-span-3 bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-md px-2 py-1 text-[11px] font-semibold">
+                      Out of Service
+                    </div>
+                    <div class="col-span-4 bg-slate-50 dark:bg-slate-900/40 rounded-md py-1 text-center text-[11px] text-slate-400">
+                      Available
+                    </div>
+                  {% else %}
+                    <div class="col-span-7 bg-emerald-500/5 hover:bg-emerald-500/10 border border-dashed border-emerald-500/20 rounded-md py-1 text-center text-[11px] text-emerald-700 dark:text-emerald-400 font-medium transition cursor-pointer"
+                         onclick="window.location.href='{{ url_for('book') }}'">
+                      + Open for Booking
+                    </div>
+                  {% endif %}
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs text-slate-400">
+        <span>Gantt reflects confirmed reservation stays</span>
+        <a href="{{ url_for('book') }}" class="text-amber-600 dark:text-amber-400 font-bold hover:underline">+ Create reservation block →</a>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ================= 3. ROOM MANAGEMENT & CATALOG ================= -->
+  <section id="rooms-section" class="space-y-5">
+    
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div>
+        <div class="flex items-center space-x-2">
+          <h2 class="font-serif text-2xl font-bold text-slate-900 dark:text-white">Rooms Catalog & Inventory</h2>
+          <span class="text-xs font-bold px-2 py-0.5 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300">{{ stats.rooms }} Total</span>
+        </div>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">High-fidelity catalog with live status control</p>
+      </div>
+
+      <div class="flex items-center space-x-3">
+        <!-- Room Category Filter Pills -->
+        <div class="hidden sm:flex items-center space-x-1 bg-slate-100 dark:bg-slate-800/80 p-1 rounded-xl border border-slate-200/60 dark:border-slate-700/60 text-xs font-semibold">
+          <button onclick="filterRoomCatalog('all')" id="filter-all" class="px-2.5 py-1 rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs font-bold">All</button>
+          <button onclick="filterRoomCatalog('Suite')" id="filter-suite" class="px-2.5 py-1 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900">Suites</button>
+          <button onclick="filterRoomCatalog('Deluxe')" id="filter-deluxe" class="px-2.5 py-1 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900">Deluxe</button>
+          <button onclick="filterRoomCatalog('Double')" id="filter-double" class="px-2.5 py-1 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900">Double</button>
+          <button onclick="filterRoomCatalog('Single')" id="filter-single" class="px-2.5 py-1 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900">Single</button>
+        </div>
+
+        <!-- View Switcher Toggle -->
+        <div class="flex items-center bg-slate-100 dark:bg-slate-800/80 p-1 rounded-xl border border-slate-200/60 dark:border-slate-700/60">
+          <button id="view-toggle-grid" onclick="setCatalogView('grid')" title="Grid View"
+            class="p-1.5 rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>
+          </button>
+          <button id="view-toggle-table" onclick="setCatalogView('table')" title="Table View"
+            class="p-1.5 rounded-lg text-slate-500 hover:text-slate-900 dark:hover:text-white">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" x2="21" y1="6" y2="6"/><line x1="8" x2="21" y1="12" y2="12"/><line x1="8" x2="21" y1="18" y2="18"/><line x1="3" x2="3.01" y1="6" y2="6"/><line x1="3" x2="3.01" y1="12" y2="12"/><line x1="3" x2="3.01" y1="18" y2="18"/></svg>
+          </button>
+        </div>
+
+        <!-- Add Room CTA -->
+        <button onclick="openAddRoomModal()" class="btn-gold py-2 px-3 text-xs">
+          + Add Room
+        </button>
+      </div>
+    </div>
+
+    <!-- 3A. Grid View (High-Fidelity Cards) -->
+    <div id="catalog-grid-view" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      {% for r in rooms %}
+      <div class="luxury-card overflow-hidden group flex flex-col justify-between room-catalog-item" data-tier="{{ r.room_type }}">
+        
+        <!-- Image Container with Aspect Ratio 16:9 -->
+        <div class="room-card-img-container bg-slate-900">
+          {% if r.room_type == 'Suite' %}
+            <img class="room-card-img" src="https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=800&q=80" alt="Suite {{ r.room_no }}" loading="lazy">
+          {% elif r.room_type == 'Deluxe' %}
+            <img class="room-card-img" src="https://images.unsplash.com/photo-1618773928121-c32242e63f39?auto=format&fit=crop&w=800&q=80" alt="Deluxe {{ r.room_no }}" loading="lazy">
+          {% elif r.room_type == 'Double' %}
+            <img class="room-card-img" src="https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=800&q=80" alt="Double {{ r.room_no }}" loading="lazy">
+          {% else %}
+            <img class="room-card-img" src="https://images.unsplash.com/photo-1566665797739-1674de7a421a?auto=format&fit=crop&w=800&q=80" alt="Single {{ r.room_no }}" loading="lazy">
+          {% endif %}
+
+          <div class="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-black/30"></div>
+
+          <!-- Top Badges Overlay -->
+          <div class="absolute top-3 inset-x-3 flex items-center justify-between">
+            <span class="pill-tier {{ r.room_type|lower }} bg-black/50 backdrop-blur-md text-white border-white/20">
+              {{ r.room_type }}
+            </span>
+            <span class="badge-status {{ r.status|lower }} bg-black/60 backdrop-blur-md border-white/20 text-white">
+              <span class="status-dot {{ r.status|lower }}"></span>
+              {{ r.status }}
+            </span>
+          </div>
+
+          <!-- Room Number Title Overlay -->
+          <div class="absolute bottom-3 left-3 right-3 flex items-baseline justify-between text-white">
+            <span class="font-serif text-xl font-bold tracking-tight">Room {{ r.room_no }}</span>
+            <span class="text-xs font-semibold text-slate-300">Floor {{ r.room_no[:1] }}</span>
+          </div>
+        </div>
+
+        <!-- Card Body -->
+        <div class="p-4 space-y-3.5 flex-1 flex flex-col justify-between">
+          <div class="flex items-baseline justify-between pt-1">
+            <div>
+              <span class="text-[11px] uppercase tracking-wider text-slate-400 font-bold block">Nightly Rate</span>
+              <div class="text-lg font-extrabold text-slate-900 dark:text-white">
+                ₹{{ "%.2f"|format(r.price) }}
+                <span class="text-xs font-normal text-slate-400">/ night</span>
+              </div>
+            </div>
+
+            <!-- Quick Status Switcher Form -->
+            <form method="post" action="{{ url_for('update_room_status', room_id=r.id) }}" class="inline">
+              <select name="status" onchange="this.form.submit()"
+                class="text-[11px] font-semibold py-1 px-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-1 focus:ring-amber-500">
+                <option value="Available" {% if r.status == 'Available' %}selected{% endif %}>🟢 Available</option>
+                <option value="Occupied" {% if r.status == 'Occupied' %}selected{% endif %}>🔴 Occupied</option>
+                <option value="Cleaning" {% if r.status == 'Cleaning' %}selected{% endif %}>🟡 Cleaning</option>
+                <option value="Maintenance" {% if r.status == 'Maintenance' %}selected{% endif %}>⚪ Maint.</option>
+              </select>
+            </form>
+          </div>
+
+          <!-- Card Actions -->
+          <div class="pt-2 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between gap-2">
+            {% if r.status == 'Available' %}
+              <a href="{{ url_for('book') }}" class="w-full btn-gold py-2 text-xs text-center justify-center">
+                Reserve Room
+              </a>
+            {% else %}
+              <button onclick="showRoomDetailModal('{{ r.id }}', '{{ r.room_no }}', '{{ r.room_type }}', '{{ r.price }}', '{{ r.status }}')"
+                class="w-full btn-secondary py-2 text-xs justify-center">
+                Room Controls
+              </button>
+            {% endif %}
+          </div>
+        </div>
+
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- 3B. Table View (Clean modern table) -->
+    <div id="catalog-table-view" class="hidden luxury-card overflow-hidden">
+      <table class="luxury-table">
+        <thead>
+          <tr>
+            <th>Room</th>
+            <th>Type</th>
+            <th>Nightly Price</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in rooms %}
+          <tr>
+            <td class="font-bold text-slate-900 dark:text-white">
+              <div class="flex items-center space-x-2.5">
+                <span class="status-dot {{ r.status|lower }}"></span>
+                <span class="font-serif text-base">Room {{ r.room_no }}</span>
+              </div>
+            </td>
+            <td>
+              <span class="pill-tier {{ r.room_type|lower }}">{{ r.room_type }}</span>
+            </td>
+            <td class="font-bold text-slate-800 dark:text-slate-200">
+              ₹{{ "%.2f"|format(r.price) }}
+            </td>
+            <td>
+              <span class="badge-status {{ r.status|lower }}">
+                <span class="status-dot {{ r.status|lower }}"></span>
+                {{ r.status }}
+              </span>
+            </td>
+            <td>
+              <div class="flex items-center space-x-2">
+                <form method="post" action="{{ url_for('update_room_status', room_id=r.id) }}" class="inline">
+                  <select name="status" onchange="this.form.submit()" class="text-xs p-1 rounded border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
+                    <option value="Available" {% if r.status == 'Available' %}selected{% endif %}>Available</option>
+                    <option value="Occupied" {% if r.status == 'Occupied' %}selected{% endif %}>Occupied</option>
+                    <option value="Cleaning" {% if r.status == 'Cleaning' %}selected{% endif %}>Cleaning</option>
+                    <option value="Maintenance" {% if r.status == 'Maintenance' %}selected{% endif %}>Maintenance</option>
+                  </select>
+                </form>
+                {% if r.status == 'Available' %}
+                <a href="{{ url_for('book') }}" class="text-xs font-bold text-amber-600 dark:text-amber-400 hover:underline">Book →</a>
+                {% endif %}
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+  </section>
+
+  <!-- ================= 4. RESERVATIONS & GUEST LOGS ================= -->
+  <section id="bookings-section" class="luxury-card p-6 space-y-6">
+    
+    <!-- Header with Search & Tabs -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div>
+        <div class="flex items-center space-x-2">
+          <h2 class="font-serif text-2xl font-bold text-slate-900 dark:text-white">Reservations & Guest Logs</h2>
+          <span class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-indigo-500/10 text-indigo-700 dark:text-indigo-400">{{ stats.bookings }} Folios</span>
+        </div>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Guest registry, check-in schedules, and billing statements</p>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-3">
+        <!-- Live Instant Search Bar -->
+        <div class="relative min-w-[220px]">
+          <svg class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          <input type="text" id="booking-search-input" onkeyup="filterBookingsTable()" placeholder="Search guest, phone, room..."
+            class="luxury-input pl-9 pr-3 py-2 text-xs">
+        </div>
+
+        <!-- Filter Tabs -->
+        <div class="flex items-center space-x-1 bg-slate-100 dark:bg-slate-800/80 p-1 rounded-xl border border-slate-200/60 dark:border-slate-700/60 text-xs font-semibold">
+          <button onclick="filterBookingStatus('all')" id="btn-status-all" class="px-3 py-1.5 rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs font-bold">All</button>
+          <button onclick="filterBookingStatus('Booked')" id="btn-status-booked" class="px-3 py-1.5 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900">Active</button>
+          <button onclick="filterBookingStatus('Checked Out')" id="btn-status-checkout" class="px-3 py-1.5 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900">Checked Out</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modernized Table UI -->
+    {% if bookings %}
+    <div class="overflow-x-auto">
+      <table class="luxury-table" id="bookings-table">
+        <thead>
+          <tr>
+            <th>Guest Details</th>
+            <th>Room Allocation</th>
+            <th>Stay Schedule</th>
+            <th>Parties</th>
+            <th>Grand Total</th>
+            <th>Status</th>
+            <th class="text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 dark:divide-slate-800/60" id="bookings-tbody">
+          {% for b in bookings %}
+          <tr class="booking-row" data-status="{{ b.status }}">
+            
+            <!-- Guest with Avatar Initials -->
+            <td>
+              <div class="flex items-center space-x-3">
+                <div class="avatar-initials bg-gradient-to-tr from-amber-500/20 to-indigo-500/20 text-slate-900 dark:text-white border border-amber-500/30">
+                  {{ b.guest_name[:2]|upper }}
+                </div>
+                <div>
+                  <div class="font-bold text-slate-900 dark:text-white text-sm guest-name">{{ b.guest_name }}</div>
+                  <div class="text-xs text-slate-400 guest-phone">{{ b.phone }}</div>
+                </div>
+              </div>
+            </td>
+
+            <!-- Room Allocation -->
+            <td>
+              <div class="font-semibold text-slate-800 dark:text-slate-200 text-sm room-info">
+                Room {{ b.room_no }}
+              </div>
+              <span class="pill-tier {{ b.room_type|lower }} text-[10px]">{{ b.room_type }}</span>
+            </td>
+
+            <!-- Stay Schedule -->
+            <td>
+              <div class="text-xs font-medium text-slate-700 dark:text-slate-300">
+                {{ b.check_in }} → {{ b.check_out }}
+              </div>
+              <span class="inline-block mt-1 text-[11px] font-bold text-amber-700 dark:text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded">
+                {{ b.nights }} Night(s)
+              </span>
+            </td>
+
+            <!-- Guests -->
+            <td class="text-slate-600 dark:text-slate-400 text-sm">
+              <span class="font-semibold text-slate-800 dark:text-slate-200">{{ b.guests }}</span> Guest(s)
+            </td>
+
+            <!-- Total -->
+            <td>
+              <div class="font-extrabold text-slate-900 dark:text-white text-base">
+                ₹{{ "%.2f"|format(b.total) }}
+              </div>
+              <span class="text-[10px] text-slate-400">Taxes included</span>
+            </td>
+
+            <!-- Status -->
+            <td>
+              {% if b.status == 'Booked' %}
+              <span class="badge-status occupied">
+                <span class="status-dot occupied"></span>
+                In-Stay (Active)
+              </span>
+              {% else %}
+              <span class="badge-status available">
+                <span class="status-dot available"></span>
+                Checked Out
+              </span>
+              {% endif %}
+            </td>
+
+            <!-- Actions -->
+            <td class="text-right whitespace-nowrap">
+              <div class="flex items-center justify-end space-x-2">
+                <a href="{{ url_for('bill', booking_id=b.id) }}" class="btn-secondary py-1.5 px-3 text-xs">
+                  <svg class="w-3.5 h-3.5 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/></svg>
+                  <span>Folio Bill</span>
+                </a>
+
+                {% if b.status == 'Booked' %}
+                <form class="inline" method="post" action="{{ url_for('checkout', booking_id=b.id) }}" onsubmit="return confirm('Process checkout for {{ b.guest_name }}? Room will be returned to Available inventory.')">
+                  <button type="submit" class="btn-gold py-1.5 px-3 text-xs">
+                    <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                    <span>Checkout</span>
+                  </button>
+                </form>
+                {% endif %}
+              </div>
+            </td>
+
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="text-center py-12 border border-dashed border-slate-200 dark:border-slate-800 rounded-xl">
+      <svg class="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect width="18" height="18" x="3" y="4" rx="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
+      <h3 class="font-bold text-slate-700 dark:text-slate-300 text-sm">No reservations recorded yet</h3>
+      <p class="text-xs text-slate-400 mt-1 max-w-sm mx-auto">Create your first reservation to populate guest records, room allocation logs, and folio invoices.</p>
+      <a href="{{ url_for('book') }}" class="btn-gold mt-4 inline-flex text-xs">
+        + Create First Reservation
+      </a>
+    </div>
+    {% endif %}
+
+  </section>
+
+</div>
+
+<!-- ================= ADD ROOM MODAL DIALOG ================= -->
+<div id="add-room-modal" class="modal-backdrop" onclick="if(event.target===this) closeAddRoomModal()">
+  <div class="modal-content p-6 sm:p-8 space-y-6">
+    <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
+      <div>
+        <h3 class="font-serif text-xl font-bold text-slate-900 dark:text-white">Add New Room</h3>
+        <p class="text-xs text-slate-500 dark:text-slate-400">Expand your hotel inventory</p>
+      </div>
+      <button onclick="closeAddRoomModal()" class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-900 flex items-center justify-center">✕</button>
+    </div>
+
+    <form method="post" action="{{ url_for('add_room') }}" class="space-y-4">
+      <div>
+        <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">Room Number</label>
+        <input type="text" name="room_no" placeholder="e.g. 501 or PH-1" required class="luxury-input">
+      </div>
+
+      <div>
+        <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">Room Category / Tier</label>
+        <select name="room_type" class="luxury-select">
+          <option value="Single">Single (Minimalist Studio)</option>
+          <option value="Double">Double (Deluxe King/Twin)</option>
+          <option value="Deluxe">Deluxe (Panoramic Suite)</option>
+          <option value="Suite">Suite (Presidential Penthouse)</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">Nightly Rate (₹ INR)</label>
+        <input type="number" name="price" min="100" step="50" placeholder="e.g. 4500" required class="luxury-input">
+      </div>
+
+      <div class="pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end space-x-3">
+        <button type="button" onclick="closeAddRoomModal()" class="btn-secondary">Cancel</button>
+        <button type="submit" class="btn-gold">+ Add to Inventory</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ================= ROOM DETAIL MODAL ================= -->
+<div id="room-detail-modal" class="modal-backdrop" onclick="if(event.target===this) closeRoomDetailModal()">
+  <div class="modal-content p-6 sm:p-8 space-y-6">
+    <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
+      <div>
+        <div class="flex items-center space-x-2">
+          <h3 id="modal-room-title" class="font-serif text-2xl font-bold text-slate-900 dark:text-white">Room 101</h3>
+          <span id="modal-room-tier" class="pill-tier single">Single</span>
+        </div>
+        <p id="modal-room-price" class="text-xs text-slate-500 dark:text-slate-400 mt-1">₹1,500.00 / night</p>
+      </div>
+      <button onclick="closeRoomDetailModal()" class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-900 flex items-center justify-center">✕</button>
+    </div>
+
+    <!-- Status Change Form -->
+    <form id="modal-status-form" method="post" action="" class="space-y-4">
+      <div>
+        <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-2">Update Operational Status</label>
+        <select name="status" id="modal-status-select" class="luxury-select">
+          <option value="Available">Available (Ready for guest)</option>
+          <option value="Occupied">Occupied (Guest in room)</option>
+          <option value="Cleaning">Cleaning (Housekeeping underway)</option>
+          <option value="Maintenance">Maintenance (Service needed)</option>
+        </select>
+      </div>
+
+      <div class="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-800">
+        <button type="submit" class="btn-gold w-full text-center justify-center">Save Status Change</button>
+      </div>
+    </form>
+
+    <div class="pt-2">
+      <form id="modal-delete-form" method="post" action="" onsubmit="return confirm('Permanently remove this room from inventory?')">
+        <button type="submit" class="text-xs font-semibold text-rose-600 dark:text-rose-400 hover:underline flex items-center gap-1.5 mx-auto">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+          Delete Room from Inventory
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Page Interactive Scripts -->
+<script>
+  // Add Room Modal Controls
+  function openAddRoomModal() {
+    document.getElementById('add-room-modal').classList.add('active');
+  }
+  function closeAddRoomModal() {
+    document.getElementById('add-room-modal').classList.remove('active');
+  }
+
+  // Room Detail Modal Controls
+  function showRoomDetailModal(id, roomNo, type, price, status) {
+    document.getElementById('modal-room-title').textContent = 'Room ' + roomNo;
+    const tierPill = document.getElementById('modal-room-tier');
+    tierPill.textContent = type;
+    tierPill.className = 'pill-tier ' + type.toLowerCase();
+    document.getElementById('modal-room-price').textContent = '₹' + parseFloat(price).toFixed(2) + ' / night';
+    document.getElementById('modal-status-select').value = status;
+    document.getElementById('modal-status-form').action = '/rooms/' + id + '/status';
+    document.getElementById('modal-delete-form').action = '/rooms/' + id + '/delete';
+    document.getElementById('room-detail-modal').classList.add('active');
+  }
+  function closeRoomDetailModal() {
+    document.getElementById('room-detail-modal').classList.remove('active');
+  }
+
+  // View Switcher (Grid vs Table)
+  function setCatalogView(view) {
+    const gridEl = document.getElementById('catalog-grid-view');
+    const tableEl = document.getElementById('catalog-table-view');
+    const gridBtn = document.getElementById('view-toggle-grid');
+    const tableBtn = document.getElementById('view-toggle-table');
+
+    if (view === 'grid') {
+      gridEl.classList.remove('hidden');
+      tableEl.classList.add('hidden');
+      gridBtn.className = "p-1.5 rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs";
+      tableBtn.className = "p-1.5 rounded-lg text-slate-500 hover:text-slate-900 dark:hover:text-white";
+    } else {
+      gridEl.classList.add('hidden');
+      tableEl.classList.remove('hidden');
+      tableBtn.className = "p-1.5 rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs";
+      gridBtn.className = "p-1.5 rounded-lg text-slate-500 hover:text-slate-900 dark:hover:text-white";
+    }
+  }
+
+  // Room Catalog Filter by Tier
+  function filterRoomCatalog(tier) {
+    const items = document.querySelectorAll('.room-catalog-item');
+    items.forEach(el => {
+      if (tier === 'all' || el.getAttribute('data-tier') === tier) {
+        el.style.display = 'flex';
+      } else {
+        el.style.display = 'none';
+      }
+    });
+
+    ['all', 'suite', 'deluxe', 'double', 'single'].forEach(t => {
+      const btn = document.getElementById('filter-' + t);
+      if (btn) {
+        if (t === tier.toLowerCase()) {
+          btn.className = "px-2.5 py-1 rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs font-bold";
+        } else {
+          btn.className = "px-2.5 py-1 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900";
+        }
+      }
+    });
+  }
+
+  // Live Instant Search for Bookings Table
+  function filterBookingsTable() {
+    const query = document.getElementById('booking-search-input').value.toLowerCase();
+    const rows = document.querySelectorAll('.booking-row');
+    rows.forEach(r => {
+      const name = r.querySelector('.guest-name')?.textContent.toLowerCase() || '';
+      const phone = r.querySelector('.guest-phone')?.textContent.toLowerCase() || '';
+      const room = r.querySelector('.room-info')?.textContent.toLowerCase() || '';
+      if (name.includes(query) || phone.includes(query) || room.includes(query)) {
+        r.style.display = '';
+      } else {
+        r.style.display = 'none';
+      }
+    });
+  }
+
+  // Filter Bookings by Status
+  function filterBookingStatus(status) {
+    const rows = document.querySelectorAll('.booking-row');
+    rows.forEach(r => {
+      if (status === 'all' || r.getAttribute('data-status') === status) {
+        r.style.display = '';
+      } else {
+        r.style.display = 'none';
+      }
+    });
+
+    const bAll = document.getElementById('btn-status-all');
+    const bBooked = document.getElementById('btn-status-booked');
+    const bOut = document.getElementById('btn-status-checkout');
+    [bAll, bBooked, bOut].forEach(b => {
+      b.className = "px-3 py-1.5 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900";
+    });
+
+    if (status === 'all') bAll.className = "px-3 py-1.5 rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs font-bold";
+    if (status === 'Booked') bBooked.className = "px-3 py-1.5 rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs font-bold";
+    if (status === 'Checked Out') bOut.className = "px-3 py-1.5 rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs font-bold";
+  }
+
+  // Set today's date label on Gantt
+  (function initGanttDates() {
+    const now = new Date();
+    const opts = { month: 'short', day: 'numeric' };
+    const todayEl = document.getElementById('gantt-today-str');
+    if (todayEl) todayEl.textContent = now.toLocaleDateString('en-US', opts);
+
+    for (let i = 1; i <= 6; i++) {
+      const d = new Date(now);
+      d.setDate(d.getDate() + i);
+      const el = document.getElementById('day-col-' + i);
+      if (el) el.textContent = d.toLocaleDateString('en-US', opts);
+    }
+  })();
+</script>
+{% endblock %}

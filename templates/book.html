@@ -1,0 +1,305 @@
+{% extends "base.html" %}
+{% block title %}New Reservation — GrandStay Luxury Management{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto space-y-8">
+
+  <!-- Header -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200/80 dark:border-slate-800/80">
+    <div>
+      <div class="flex items-center space-x-2 text-xs font-bold uppercase tracking-widest text-amber-700 dark:text-amber-400 mb-1">
+        <span>Reservation Desk</span>
+        <span>•</span>
+        <span>Guest Folio Creation</span>
+      </div>
+      <h1 class="font-serif text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">Create New Reservation</h1>
+      <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">Book an available suite or room with automated folio calculation and key assignment.</p>
+    </div>
+
+    <a href="{{ url_for('index') }}" class="btn-secondary self-start sm:self-auto">
+      <svg class="w-4 h-4 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      <span>Back to Dashboard</span>
+    </a>
+  </div>
+
+  {% if rooms %}
+  <!-- 2-Column Split Layout: Form & Live Folio Preview -->
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+    
+    <!-- LEFT: High-End Reservation Form (7 Cols) -->
+    <div class="lg:col-span-7 luxury-card p-6 sm:p-8 space-y-6">
+      
+      <div class="flex items-center space-x-3 pb-3 border-b border-slate-100 dark:border-slate-800">
+        <div class="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-700 dark:text-amber-400 flex items-center justify-center font-bold text-sm">1</div>
+        <h2 class="text-base font-bold text-slate-900 dark:text-white">Guest Information & Stay Details</h2>
+      </div>
+
+      <form method="post" id="reservation-form" class="space-y-5">
+        
+        <!-- Guest Name & Phone -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
+              Guest Full Name <span class="text-rose-500">*</span>
+            </label>
+            <input type="text" name="guest_name" id="book-name" required placeholder="e.g. Lord Julian Davies"
+              class="luxury-input" onkeyup="updateLivePreview()">
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
+              Contact Phone <span class="text-rose-500">*</span>
+            </label>
+            <input type="tel" name="phone" id="book-phone" required placeholder="e.g. +1 (555) 789-0123"
+              class="luxury-input" onkeyup="updateLivePreview()">
+          </div>
+        </div>
+
+        <!-- Email & Guests Count -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div class="sm:col-span-2">
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
+              Email Address (Optional)
+            </label>
+            <input type="email" name="email" id="book-email" placeholder="e.g. julian@daviesholdings.com"
+              class="luxury-input" onkeyup="updateLivePreview()">
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
+              Number of Guests
+            </label>
+            <input type="number" name="guests" id="book-guests" min="1" max="10" value="2" required
+              class="luxury-input" onchange="updateLivePreview()">
+          </div>
+        </div>
+
+        <!-- Room Allocation Select -->
+        <div>
+          <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
+            Select Available Room <span class="text-rose-500">*</span>
+          </label>
+          <select name="room_id" id="book-room-id" required class="luxury-select" onchange="updateLivePreview()">
+            {% for r in rooms %}
+              <option value="{{ r.id }}" data-no="{{ r.room_no }}" data-tier="{{ r.room_type }}" data-price="{{ r.price }}" {% if loop.first %}selected{% endif %}>
+                Room {{ r.room_no }} • {{ r.room_type }} Suite • ₹{{ "%.2f"|format(r.price) }} / night
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- Check-in and Check-out Dates -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
+              Check-In Date <span class="text-rose-500">*</span>
+            </label>
+            <input type="date" name="check_in" id="book-checkin" required class="luxury-input" onchange="updateLivePreview()">
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
+              Check-Out Date <span class="text-rose-500">*</span>
+            </label>
+            <input type="date" name="check_out" id="book-checkout" required class="luxury-input" onchange="updateLivePreview()">
+          </div>
+        </div>
+
+        <!-- Special Services Checklist -->
+        <div class="pt-3 border-t border-slate-100 dark:border-slate-800 space-y-2">
+          <span class="text-xs font-bold uppercase tracking-wider text-slate-500 block mb-1">Complimentary Inclusions</span>
+          <div class="grid grid-cols-2 gap-2 text-xs text-slate-600 dark:text-slate-300">
+            <label class="flex items-center space-x-2">
+              <input type="checkbox" checked disabled class="rounded text-amber-600">
+              <span>High-speed Wi-Fi Access</span>
+            </label>
+            <label class="flex items-center space-x-2">
+              <input type="checkbox" checked disabled class="rounded text-amber-600">
+              <span>Executive Lounge & Breakfast</span>
+            </label>
+            <label class="flex items-center space-x-2">
+              <input type="checkbox" checked disabled class="rounded text-amber-600">
+              <span>Valet Parking & Luggage Care</span>
+            </label>
+            <label class="flex items-center space-x-2">
+              <input type="checkbox" checked disabled class="rounded text-amber-600">
+              <span>24/7 Concierge Support</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Form Submission Button -->
+        <div class="pt-4">
+          <button type="submit" class="w-full btn-gold py-3 text-sm font-bold shadow-md">
+            <svg class="w-4 h-4 text-slate-900" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>Confirm Reservation & Generate Folio</span>
+          </button>
+        </div>
+
+      </form>
+    </div>
+
+    <!-- RIGHT: Live Folio & Room Preview Card (5 Cols) -->
+    <div class="lg:col-span-5 space-y-6 sticky top-28">
+      
+      <div class="luxury-card overflow-hidden">
+        <!-- Room Preview Image -->
+        <div class="room-card-img-container bg-slate-900">
+          <img id="preview-room-img" class="room-card-img" src="https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=800&q=80" alt="Selected Room">
+          <div class="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-transparent to-black/30"></div>
+          
+          <div class="absolute top-3 left-3">
+            <span id="preview-tier-badge" class="pill-tier suite bg-black/60 backdrop-blur-md text-white border-white/20">Suite</span>
+          </div>
+
+          <div class="absolute bottom-3 left-3 right-3 text-white">
+            <div class="font-serif text-2xl font-bold" id="preview-room-heading">Room 101</div>
+            <p class="text-xs text-slate-300" id="preview-rate-label">₹1,500.00 / night</p>
+          </div>
+        </div>
+
+        <!-- Folio Breakdown -->
+        <div class="p-6 space-y-4">
+          <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Reservation Summary</span>
+            <span class="text-xs font-bold text-amber-700 dark:text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full" id="preview-nights-pill">1 Night(s)</span>
+          </div>
+
+          <!-- Guest line item -->
+          <div class="flex items-center justify-between text-xs">
+            <span class="text-slate-500 dark:text-slate-400">Guest Name:</span>
+            <span class="font-bold text-slate-800 dark:text-slate-200" id="preview-guest-name">Guest</span>
+          </div>
+
+          <!-- Dates line item -->
+          <div class="flex items-center justify-between text-xs">
+            <span class="text-slate-500 dark:text-slate-400">Duration:</span>
+            <span class="font-medium text-slate-800 dark:text-slate-200" id="preview-dates">Today → Tomorrow</span>
+          </div>
+
+          <!-- Base rate calculation -->
+          <div class="flex items-center justify-between text-xs">
+            <span class="text-slate-500 dark:text-slate-400" id="preview-calc-label">Base Rate (1 × ₹1,500):</span>
+            <span class="font-semibold text-slate-800 dark:text-slate-200" id="preview-subtotal">₹1,500.00</span>
+          </div>
+
+          <div class="flex items-center justify-between text-xs">
+            <span class="text-slate-500 dark:text-slate-400">Taxes & Hospitality Levy:</span>
+            <span class="font-semibold text-emerald-600 dark:text-emerald-400">Included (0.00)</span>
+          </div>
+
+          <!-- Grand Total Gold Container -->
+          <div class="p-4 rounded-xl bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent border border-amber-500/20 flex items-center justify-between mt-3">
+            <div>
+              <span class="text-[11px] font-bold uppercase tracking-wider text-amber-800 dark:text-amber-400 block">Total Folio Charge</span>
+              <span class="text-[10px] text-slate-400">Payable at check-in or checkout</span>
+            </div>
+            <div class="text-right">
+              <span class="font-serif text-2xl font-black text-slate-900 dark:text-white" id="preview-grand-total">₹1,500.00</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Luxury Policy Card -->
+      <div class="p-4 rounded-xl bg-slate-100/70 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-700/60 text-xs text-slate-500 dark:text-slate-400 space-y-1.5">
+        <div class="flex items-center space-x-2 text-slate-700 dark:text-slate-200 font-bold">
+          <svg class="w-4 h-4 text-amber-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="16" y2="12"/><line x1="12" x2="12.01" y1="8" y2="8"/></svg>
+          <span>GrandStay Hospitality Guarantee</span>
+        </div>
+        <p>Standard check-in starts at 14:00 hrs. Check-out time is 11:00 hrs. Automated folio receipt generated upon reservation completion.</p>
+      </div>
+
+    </div>
+
+  </div>
+  {% else %}
+  <!-- Empty State if No Rooms are Available -->
+  <div class="luxury-card p-12 text-center max-w-xl mx-auto space-y-4">
+    <div class="w-16 h-16 rounded-2xl bg-amber-500/10 text-amber-600 flex items-center justify-center mx-auto">
+      <svg class="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 4v16"/><path d="M2 8h18a2 2 0 0 1 2 2v10"/><path d="M2 17h20"/><path d="M6 8v9"/></svg>
+    </div>
+    <h3 class="font-serif text-2xl font-bold text-slate-900 dark:text-white">All Rooms Currently Occupied</h3>
+    <p class="text-sm text-slate-500 dark:text-slate-400">
+      Every room in the inventory is presently reserved or undergoing maintenance. Please checkout a guest or add new rooms from the dashboard.
+    </p>
+    <div class="pt-2 flex items-center justify-center space-x-3">
+      <a href="{{ url_for('index') }}" class="btn-secondary">Return to Dashboard</a>
+    </div>
+  </div>
+  {% endif %}
+
+</div>
+
+<script>
+  const roomImages = {
+    'Suite': 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=800&q=80',
+    'Deluxe': 'https://images.unsplash.com/photo-1618773928121-c32242e63f39?auto=format&fit=crop&w=800&q=80',
+    'Double': 'https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=800&q=80',
+    'Single': 'https://images.unsplash.com/photo-1566665797739-1674de7a421a?auto=format&fit=crop&w=800&q=80'
+  };
+
+  function initDates() {
+    const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    const toInputStr = d => d.toISOString().split('T')[0];
+    const checkinInput = document.getElementById('book-checkin');
+    const checkoutInput = document.getElementById('book-checkout');
+
+    if (checkinInput && !checkinInput.value) checkinInput.value = toInputStr(today);
+    if (checkoutInput && !checkoutInput.value) checkoutInput.value = toInputStr(tomorrow);
+
+    updateLivePreview();
+  }
+
+  function updateLivePreview() {
+    const name = document.getElementById('book-name')?.value.trim() || 'Guest';
+    document.getElementById('preview-guest-name').textContent = name;
+
+    const roomSelect = document.getElementById('book-room-id');
+    if (!roomSelect) return;
+    const selectedOpt = roomSelect.options[roomSelect.selectedIndex];
+    if (!selectedOpt) return;
+
+    const roomNo = selectedOpt.getAttribute('data-no');
+    const roomTier = selectedOpt.getAttribute('data-tier') || 'Standard';
+    const roomPrice = parseFloat(selectedOpt.getAttribute('data-price')) || 1500;
+
+    document.getElementById('preview-room-heading').textContent = 'Room ' + roomNo;
+    document.getElementById('preview-rate-label').textContent = '₹' + roomPrice.toFixed(2) + ' / night';
+
+    const tierBadge = document.getElementById('preview-tier-badge');
+    tierBadge.textContent = roomTier;
+    tierBadge.className = 'pill-tier ' + roomTier.toLowerCase() + ' bg-black/60 backdrop-blur-md text-white border-white/20';
+
+    const roomImg = document.getElementById('preview-room-img');
+    if (roomImages[roomTier]) {
+      roomImg.src = roomImages[roomTier];
+    }
+
+    // Dates & Nights
+    const d1Str = document.getElementById('book-checkin').value;
+    const d2Str = document.getElementById('book-checkout').value;
+
+    if (d1Str && d2Str) {
+      const d1 = new Date(d1Str);
+      const d2 = new Date(d2Str);
+      const diffTime = d2 - d1;
+      const nights = Math.max(1, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
+
+      document.getElementById('preview-nights-pill').textContent = nights + ' Night(s)';
+      document.getElementById('preview-dates').textContent = d1Str + ' → ' + d2Str;
+
+      const total = roomPrice * nights;
+      document.getElementById('preview-calc-label').textContent = 'Base Rate (' + nights + ' × ₹' + roomPrice.toFixed(0) + '):';
+      document.getElementById('preview-subtotal').textContent = '₹' + total.toFixed(2);
+      document.getElementById('preview-grand-total').textContent = '₹' + total.toFixed(2);
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', initDates);
+</script>
+{% endblock %}
