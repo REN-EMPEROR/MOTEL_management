@@ -1,10 +1,32 @@
-from flask import Flask, render_template, request, redirect, url_for, flash
+import os
+import tempfile
 import sqlite3
 from datetime import datetime, date
+from flask import Flask, render_template, request, redirect, url_for, flash
 
-app = Flask(__name__)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+app = Flask(
+    __name__,
+    template_folder=os.path.join(BASE_DIR, "templates"),
+    static_folder=os.path.join(BASE_DIR, "static")
+)
 app.secret_key = "hotel-secret-key-luxury-grandstay"
-DB = "hotel.db"
+
+def get_db_path():
+    # In serverless environments like Vercel/AWS Lambda, the root directory is read-only.
+    # We test if the local directory is writable. If not, we fall back to /tmp/hotel.db.
+    local_db = os.path.join(BASE_DIR, "hotel.db")
+    try:
+        test_file = os.path.join(BASE_DIR, ".write_test")
+        with open(test_file, "w") as f:
+            f.write("1")
+        os.remove(test_file)
+        return local_db
+    except (OSError, IOError, PermissionError):
+        return os.path.join(tempfile.gettempdir(), "hotel.db")
+
+DB = get_db_path()
 
 def get_db():
     conn = sqlite3.connect(DB)
@@ -53,7 +75,7 @@ def init_db():
         ]
         conn.executemany("INSERT INTO rooms(room_no, room_type, price, status) VALUES(?,?,?,?)", rooms)
 
-    # Seed initial demo reservations if none exist
+    # Seed demo reservations if none exist
     bookings_count = conn.execute("SELECT COUNT(*) FROM bookings").fetchone()[0]
     if bookings_count == 0:
         today_str = date.today().strftime("%Y-%m-%d")
@@ -76,6 +98,22 @@ def init_db():
 
     conn.commit()
     conn.close()
+
+# Ensure DB is initialized at module import (critical for Vercel Serverless Functions)
+try:
+    init_db()
+except Exception as e:
+    print("Warning: Database initialization exception:", e)
+
+# Fallback hook for cold starts in serverless environments
+@app.before_request
+def ensure_tables():
+    try:
+        conn = get_db()
+        conn.execute("SELECT 1 FROM rooms LIMIT 1")
+        conn.close()
+    except Exception:
+        init_db()
 
 @app.route("/")
 def index():
@@ -117,7 +155,6 @@ def index():
         "today_checkouts": max(today_checkouts, 1 if revenue > 0 else 0)
     }
 
-    # Prepare lightweight serializable list for frontend timeline/heatmaps
     rooms_data = [dict(r) for r in rooms]
     bookings_data = [dict(b) for b in bookings]
 
